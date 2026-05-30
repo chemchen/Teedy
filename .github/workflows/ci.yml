@@ -1,0 +1,79 @@
+name: Teedy CI Pipeline
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            tesseract-ocr \
+            tesseract-ocr-eng \
+            tesseract-ocr-deu \
+            ffmpeg \
+            mediainfo
+
+      - name: Maven compile
+        run: mvn clean compile
+
+      - name: PMD code check
+        run: mvn pmd:pmd
+
+      - name: Run unit tests
+        run: mvn test
+
+      - name: Generate test report
+        run: mvn surefire-report:report
+
+      - name: Generate Javadoc
+        run: |
+          mvn javadoc:javadoc
+          mvn javadoc:jar
+
+      - name: Package artifacts
+        run: mvn package -DskipTests
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: teedy-build-artifacts
+          path: |
+            **/target/*.jar
+            **/target/*.war
+
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        with:
+          name: teedy-test-report
+          path: '**/target/site/surefire-report.html'
+
+      - name: Upload Javadoc
+        uses: actions/upload-artifact@v4
+        with:
+          name: teedy-javadoc
+          path: '**/target/*-javadoc.jar'
+
+      - name: Upload PMD report
+        uses: actions/upload-artifact@v4
+        with:
+          name: teedy-pmd-report
+          path: '**/target/pmd.xml'
