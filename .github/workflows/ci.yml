@@ -10,7 +10,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,12 +24,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            tesseract-ocr \
-            tesseract-ocr-eng \
-            tesseract-ocr-deu \
-            ffmpeg \
-            mediainfo
+          sudo apt-get install -y tesseract-ocr tesseract-ocr-eng tesseract-ocr-deu ffmpeg mediainfo
 
       - name: Maven compile
         run: mvn clean compile
