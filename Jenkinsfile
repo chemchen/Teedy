@@ -6,7 +6,7 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Maven Install (build + install to local repo)') {
+        stage('Maven Install') {
             steps {
                 sh 'mvn clean install -DskipTests'
             }
@@ -40,7 +40,10 @@ pipeline {
                     publishHTML([
                         reportDir: 'docs-web/target/site',
                         reportFiles: 'surefire-report.html',
-                        reportName: 'Surefire Report'
+                        reportName: 'Surefire Report',
+                        allowMissing: true,
+                        keepAll: true,
+                        alwaysLinkToLastBuild: true
                     ])
                 }
             }
