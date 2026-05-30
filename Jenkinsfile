@@ -6,7 +6,7 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Maven Install') {
+        stage('Maven Build & Install') {
             steps {
                 sh 'mvn clean install -DskipTests'
             }
@@ -15,33 +15,15 @@ pipeline {
             steps {
                 sh 'mvn pmd:pmd'
             }
-            // 不额外发布，让 archiveArtifacts 归档 pmd.xml 即可
         }
         stage('Run Unit Tests') {
             steps {
                 sh 'mvn test'
             }
-            post {
-                always {
-                    junit '**/target/surefire-reports/*.xml'
-                }
-            }
         }
         stage('Generate Test Report') {
             steps {
                 sh 'mvn surefire-report:report'
-            }
-            post {
-                always {
-                    publishHTML([
-                        reportDir: 'docs-web/target/site',
-                        reportFiles: 'surefire-report.html',
-                        reportName: 'Surefire Report',
-                        allowMissing: true,
-                        keepAll: true,
-                        alwaysLinkToLastBuild: true
-                    ])
-                }
             }
         }
         stage('Generate JavaDoc') {
@@ -58,7 +40,7 @@ pipeline {
     }
     post {
         always {
-            archiveArtifacts artifacts: '**/target/*.jar,**/target/*.war,**/target/*-javadoc.jar,**/target/pmd.xml', allowEmptyArchive: true
+            archiveArtifacts artifacts: '**/target/*.jar,**/target/*.war,**/target/*-javadoc.jar,**/target/site/surefire-report.html,**/target/pmd.xml', allowEmptyArchive: true
         }
     }
 }
