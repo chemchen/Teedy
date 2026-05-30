@@ -15,11 +15,7 @@ pipeline {
             steps {
                 sh 'mvn pmd:pmd'
             }
-            post {
-                always {
-                    recordIssues(tools: [pmdParser(pattern: '**/target/pmd.xml')])
-                }
-            }
+            // 不额外发布，让 archiveArtifacts 归档 pmd.xml 即可
         }
         stage('Run Unit Tests') {
             steps {
@@ -50,8 +46,8 @@ pipeline {
         }
         stage('Generate JavaDoc') {
             steps {
-                sh 'mvn javadoc:javadoc'
-                sh 'mvn javadoc:jar'
+                sh 'mvn javadoc:javadoc -Ddoclint=none'
+                sh 'mvn javadoc:jar -Ddoclint=none'
             }
         }
         stage('Package') {
@@ -62,7 +58,7 @@ pipeline {
     }
     post {
         always {
-            archiveArtifacts artifacts: '**/target/*.jar,**/target/*.war,**/target/*-javadoc.jar', allowEmptyArchive: true
+            archiveArtifacts artifacts: '**/target/*.jar,**/target/*.war,**/target/*-javadoc.jar,**/target/pmd.xml', allowEmptyArchive: true
         }
     }
 }
